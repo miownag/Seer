@@ -1,6 +1,5 @@
 {
   "recommendations": [
-    "styled-components.vscode-styled-components",
     "EditorConfig.editorconfig",
     "streetsidesoftware.code-spell-checker",
     "codezombiech.gitignore",
@@ -8,7 +7,6 @@
     "jasonnutter.search-node-modules",
     "jock.svg",
     "mikestead.dotenv",
-    "vscode-icons-team.vscode-icons",
     "biomejs.biome"
   ]
 }

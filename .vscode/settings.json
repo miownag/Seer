@@ -86,7 +86,6 @@
   "emmet.triggerExpansionOnTab": true,
   "typescript.tsdk": "node_modules/typescript/lib",
   "cSpell.words": [
-    "heroui",
     "rspack"
   ]
 }

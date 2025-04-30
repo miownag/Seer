@@ -11,7 +11,7 @@ const Layout = () => {
       <TopBar />
       <Box className="flex flex-1">
         <SideBar />
-        <Box component="section" className="flex-1 pr-2 pb-2">
+        <Box className="flex-1 pr-2 pb-2">
           <Outlet />
         </Box>
       </Box>
