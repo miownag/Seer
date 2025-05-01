@@ -30,7 +30,13 @@ const FileSearcher = () => {
       }}
       inputValue={inputValue}
       onInputChange={(_e, value) => setInputValue(value)}
-      renderInput={params => <TextField {...params} label="文件名/路径" />}
+      renderInput={params => (
+        <TextField
+          {...params}
+          label="文件名/路径"
+          placeholder="请输入文件名/路径搜索"
+        />
+      )}
       onChange={(_e, value) => {
         setInputValue('');
         console.log('打开文件', value);

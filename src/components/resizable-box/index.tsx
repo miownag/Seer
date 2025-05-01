@@ -9,7 +9,7 @@ import {
 } from 'react';
 
 interface IProps {
-  children: ReactElement;
+  children: ReactElement | null;
   className?: string;
   positions: Array<'left' | 'right' | 'top' | 'bottom'>;
   defaultHeight?: number;

@@ -1,5 +1,5 @@
-import type { matchesType } from '@/typings/modern';
-import { useMatches, useNavigate } from '@modern-js/runtime/router';
+import { usePath } from '@/hooks';
+import { useNavigate } from '@modern-js/runtime/router';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import { Box, Stack } from '@mui/material';
 import SideBarAvatar from './avatar';
@@ -7,8 +7,7 @@ import BarItem from './bar-item';
 import { topHalfItems } from './config';
 
 const SideBar = () => {
-  const matches = useMatches() as matchesType;
-  const currentPath = matches[1]?.handle?.pathName;
+  const currentPath = usePath();
   const navigate = useNavigate();
 
   // TODO: 处理items，加上badgeInfo

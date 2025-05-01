@@ -6,7 +6,7 @@ import FileSearcher from './file-searcher';
 const TopBar = () => {
   return (
     <Grid container className="h-16 w-screen flex pl-4 pr-4">
-      <Grid size={5} className="flex items-center">
+      <Grid size={4.5} className="flex items-center">
         <SeerIcon
           className="h-12 w-12"
           viewBox="0 0 1000 1000"
@@ -24,10 +24,10 @@ const TopBar = () => {
           </Box>
         </Box>
       </Grid>
-      <Grid size={2} className="flex items-center justify-center">
+      <Grid size={3} className="flex items-center justify-center">
         <FileSearcher />
       </Grid>
-      <Grid size={5} className="flex items-center justify-end">
+      <Grid size={4.5} className="flex items-center justify-end">
         <Stack direction="row" spacing={2} className="items-center">
           <AiAssistant />
           <Box component="span" className="h-full text-xs text-slate-400">
