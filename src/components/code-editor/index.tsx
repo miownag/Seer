@@ -33,9 +33,11 @@ const CodeEditor: FC = () => {
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     if (divEl.current) {
+      // TODO: create时写死了宽度
       editor = monaco.editor.create(divEl.current, {
         value: fileContent,
         language: fileLanguage,
+        automaticLayout: true,
       });
     }
     return () => {
@@ -55,7 +57,7 @@ const CodeEditor: FC = () => {
   //     });
   //   }, [fileLanguage]);
 
-  return <Box className="w-full h-full" ref={divEl} />;
+  return <Box className="flex-1 h-full" ref={divEl} />;
 };
 
 export default CodeEditor;

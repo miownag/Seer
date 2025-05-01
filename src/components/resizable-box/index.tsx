@@ -10,7 +10,8 @@ import {
 
 interface IProps {
   children: ReactElement | null;
-  className?: string;
+  containerClassName?: string;
+  contentClassName?: string;
   positions: Array<'left' | 'right' | 'top' | 'bottom'>;
   defaultHeight?: number;
   defaultWidth?: number;
@@ -20,7 +21,8 @@ interface IProps {
 
 const ResizableBox: FC<IProps> = ({
   children,
-  className,
+  contentClassName,
+  containerClassName,
   positions,
   defaultHeight = 0,
   defaultWidth = 0,
@@ -54,7 +56,9 @@ const ResizableBox: FC<IProps> = ({
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     const newWidth = startWidth.current + (e.clientX - startX.current);
+    const newHeight = startHeight.current + (e.clientY - startY.current);
     setWidth(newWidth);
+    setHeight(newHeight);
   }, []);
 
   const handleMouseUp = useCallback(() => {
@@ -82,14 +86,14 @@ const ResizableBox: FC<IProps> = ({
   return (
     <Box
       ref={ref}
-      className="flex relative"
+      className={`flex relative ${containerClassName || ''}`}
       sx={{
         width: fixedWidth ? fixedWidth : `${width}px`,
         height: fixedHeight ? fixedHeight : `${height}px`,
         ...getContainerPadding(),
       }}
     >
-      <Box className={`flex-1 ${className || ''}`}>{children}</Box>
+      <Box className={`flex-1 ${contentClassName || ''}`}>{children}</Box>
       {resizeRight && (
         <Box
           className="h-full w-1.5 cursor-col-resize absolute top-0 right-0"
