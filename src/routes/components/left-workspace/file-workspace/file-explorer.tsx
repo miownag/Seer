@@ -1,3 +1,4 @@
+import { MainStoreContext } from '@/stores';
 import ArticleIcon from '@mui/icons-material/Article';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
@@ -27,7 +28,8 @@ import {
   useTreeItem,
 } from '@mui/x-tree-view/useTreeItem';
 import { animated, useSpring } from '@react-spring/web';
-import React from 'react';
+import React, { useContext } from 'react';
+import { useStore } from 'zustand';
 
 type FileType =
   | 'image'
@@ -303,6 +305,11 @@ const CustomTreeItem = React.forwardRef(function CustomTreeItem(
 
 export default function FileExplorer() {
   // TODO: 获取真正的ITEMS
+  const store = useContext(MainStoreContext);
+  if (!store) throw new Error('Missing Provider in the tree');
+  const fileTree = useStore(store, (state) => state.fileTree);
+  console.log('测试', fileTree);
+
   return (
     <RichTreeView
       items={ITEMS}

@@ -9,6 +9,7 @@
     "serve": "modern serve",
     "new": "modern new",
     "lint": "biome check",
+    "lint:fix": "biome check --write",
     "prepare": "simple-git-hooks",
     "upgrade": "modern upgrade"
   },
@@ -33,9 +34,11 @@
     "@mui/x-tree-view": "^8.1.0",
     "@react-spring/web": "^9.7.5",
     "es-toolkit": "^1.36.0",
+    "immer": "^10.1.1",
     "monaco-editor": "^0.52.2",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "zustand": "^5.0.4"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",

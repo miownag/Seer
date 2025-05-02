@@ -1,4 +1,5 @@
-import { Box, type SxProps, type Theme } from '@mui/material';
+import { Box } from '@mui/material';
+import { isNil } from 'es-toolkit';
 import {
   type CSSProperties,
   type FC,
@@ -17,6 +18,8 @@ interface IProps {
   defaultWidth?: number;
   fixedHeight?: CSSProperties['height'];
   fixedWidth?: CSSProperties['width'];
+  maxHeight?: number;
+  maxWidth?: number;
 }
 
 const ResizableBox: FC<IProps> = ({
@@ -28,6 +31,8 @@ const ResizableBox: FC<IProps> = ({
   defaultWidth = 0,
   fixedHeight,
   fixedWidth,
+  maxHeight,
+  maxWidth,
 }) => {
   const posSet = new Set(positions);
   const [width, setWidth] = useState<number>(defaultWidth);
@@ -54,11 +59,16 @@ const ResizableBox: FC<IProps> = ({
     [width, height],
   );
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   const handleMouseMove = useCallback((e: MouseEvent) => {
     const newWidth = startWidth.current + (e.clientX - startX.current);
-    const newHeight = startHeight.current + (e.clientY - startY.current);
-    setWidth(newWidth);
-    setHeight(newHeight);
+    const newHeight = startHeight.current + (startY.current - e.clientY);
+    if (isNil(maxWidth) || newWidth <= maxWidth) {
+      setWidth(newWidth);
+    }
+    if (isNil(maxHeight) || newHeight <= maxHeight) {
+      setHeight(newHeight);
+    }
   }, []);
 
   const handleMouseUp = useCallback(() => {
@@ -96,7 +106,10 @@ const ResizableBox: FC<IProps> = ({
       <Box className={`flex-1 ${contentClassName || ''}`}>{children}</Box>
       {resizeRight && (
         <Box
-          className="h-full w-1.5 cursor-col-resize absolute top-0 right-0"
+          className="h-full w-1.5 cursor-col-resize absolute top-0"
+          sx={{
+            right: '1px',
+          }}
           onMouseDown={handleMouseDown}
         >
           <Box className="hover:bg-orange-400 h-full w-0.5 ml-0.5" />
@@ -104,7 +117,10 @@ const ResizableBox: FC<IProps> = ({
       )}
       {resizeLeft && (
         <Box
-          className="h-full w-1.5 cursor-col-resize absolute top-0 left-0"
+          className="h-full w-1.5 cursor-col-resize absolute top-0"
+          sx={{
+            left: '1px',
+          }}
           onMouseDown={handleMouseDown}
         >
           <Box className="hover:bg-orange-400 h-full w-0.5 mr-0.5" />
@@ -112,7 +128,10 @@ const ResizableBox: FC<IProps> = ({
       )}
       {resizeTop && (
         <Box
-          className="h-1.5 w-full cursor-col-resize absolute top-0 left-0"
+          className="h-1.5 w-full cursor-row-resize absolute top-0"
+          sx={{
+            top: '1px',
+          }}
           onMouseDown={handleMouseDown}
         >
           <Box className="hover:bg-orange-400 h-0.5 w-full mb-0.5" />
@@ -120,7 +139,10 @@ const ResizableBox: FC<IProps> = ({
       )}
       {resizeBottom && (
         <Box
-          className="h-1.5 w-full cursor-col-resize absolute bottom-0 left-0"
+          className="h-1.5 w-full cursor-row-resize absolute bottom-0"
+          sx={{
+            bottom: '1px',
+          }}
           onMouseDown={handleMouseDown}
         >
           <Box className="hover:bg-orange-400 h-0.5 w-full mt-0.5" />

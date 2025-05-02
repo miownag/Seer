@@ -30,7 +30,7 @@ const FileSearcher = () => {
       }}
       inputValue={inputValue}
       onInputChange={(_e, value) => setInputValue(value)}
-      renderInput={params => (
+      renderInput={(params) => (
         <TextField
           {...params}
           label="文件名/路径"

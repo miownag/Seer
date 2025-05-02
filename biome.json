@@ -13,9 +13,9 @@
   "javascript": {
     "formatter": {
       "quoteStyle": "single",
-      "arrowParentheses": "asNeeded",
       "jsxQuoteStyle": "double",
-      "lineWidth": 80
+      "lineWidth": 80,
+      "arrowParentheses": "always"
     }
   },
   "linter": {
