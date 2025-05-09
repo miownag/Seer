@@ -35,6 +35,7 @@ type Actions = {
   editFileContent: (file: IFile, newContent: string) => void;
   deleteFsItem: (fsItem: fsItem) => void;
   expandFolders: (folders: IFolder[]) => void;
+  foldFolders: (folders: IFolder[], foldChildren?: boolean) => void;
   selectFsItem: (fsItem: fsItem) => void;
   setAiVisible: (visible: boolean) => void;
 };

@@ -1,11 +1,8 @@
+import { useMainStore } from '@/stores';
 import { Box } from '@mui/material';
-import type { FC } from 'react';
 
-interface IProps {
-  visible: boolean;
-}
-
-const AIChat: FC<IProps> = ({ visible }) => {
+const AIChat = () => {
+  const visible = useMainStore((state) => state.aiVisible);
   return <Box className={`${visible ? '' : 'hidden'}`}>AI聊天框</Box>;
 };
 

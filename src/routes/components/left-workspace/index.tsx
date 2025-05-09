@@ -11,6 +11,7 @@ const LeftWorkspace = () => {
       fixedHeight="h-full"
       defaultWidth={300}
       maxWidth={400}
+      minWidth={220}
     >
       {path === 'file-editor' ? <FileWorkspace /> : null}
     </ResizableBox>

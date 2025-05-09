@@ -1,11 +1,11 @@
 import CodeEditor from '@/components/code-editor';
-import { Box } from '@mui/material';
 
 const FileEditor = () => {
   return (
-    <Box className="flex flex-1 p-2 rounded-lg bg-white">
+    <div className="flex-1 p-2 rounded-lg bg-white flex flex-col min-h-0">
+      <div className="h-16">文件夹</div>
       <CodeEditor />
-    </Box>
+    </div>
   );
 };
 

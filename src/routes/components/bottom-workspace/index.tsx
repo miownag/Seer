@@ -43,7 +43,8 @@ const BottomWorkspace = () => {
       positions={['top']}
       fixedWidth="w-full"
       defaultHeight={300}
-      maxHeight={400}
+      maxHeight={350}
+      minHeight={200}
     >
       <Box className="w-full">
         <Box

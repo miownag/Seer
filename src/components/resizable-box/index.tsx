@@ -19,7 +19,9 @@ interface IProps {
   fixedHeight?: CSSProperties['height'];
   fixedWidth?: CSSProperties['width'];
   maxHeight?: number;
+  minHeight?: number;
   maxWidth?: number;
+  minWidth?: number;
 }
 
 const ResizableBox: FC<IProps> = ({
@@ -32,7 +34,9 @@ const ResizableBox: FC<IProps> = ({
   fixedHeight,
   fixedWidth,
   maxHeight,
+  minHeight,
   maxWidth,
+  minWidth,
 }) => {
   const posSet = new Set(positions);
   const [width, setWidth] = useState<number>(defaultWidth);
@@ -63,10 +67,16 @@ const ResizableBox: FC<IProps> = ({
   const handleMouseMove = useCallback((e: MouseEvent) => {
     const newWidth = startWidth.current + (e.clientX - startX.current);
     const newHeight = startHeight.current + (startY.current - e.clientY);
-    if (isNil(maxWidth) || newWidth <= maxWidth) {
+    if (
+      (isNil(maxWidth) || newWidth <= maxWidth) &&
+      (isNil(minWidth) || newWidth >= minWidth)
+    ) {
       setWidth(newWidth);
     }
-    if (isNil(maxHeight) || newHeight <= maxHeight) {
+    if (
+      (isNil(maxHeight) || newHeight <= maxHeight) &&
+      (isNil(minHeight) || newHeight >= minHeight)
+    ) {
       setHeight(newHeight);
     }
   }, []);
