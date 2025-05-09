@@ -14,11 +14,9 @@ const Layout = () => {
       <Box className="bg-slate-100 flex flex-col h-screen">
         <TopBar />
         <Box className="flex flex-1 mb-2 min-h-0">
-          {/* 添加min-h-0防止flex子元素溢出 */}
           <SideBar />
           <LeftWorkspace />
           <Box className="flex-1 pr-2 flex flex-col min-w-0">
-            {/* 添加min-w-0防止flex子元素溢出 */}
             <Outlet />
             <BottomWorkspace />
           </Box>

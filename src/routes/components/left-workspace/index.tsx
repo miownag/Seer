@@ -7,6 +7,7 @@ const LeftWorkspace = () => {
   return (
     <ResizableBox
       contentClassName="bg-white rounded-lg p-2"
+      containerClassName={path ? '' : 'hidden'}
       positions={['right']}
       fixedHeight="h-full"
       defaultWidth={300}
