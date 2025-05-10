@@ -1,11 +1,3 @@
-enum CodeLanguage {
-  ts = 'typescript',
-  tsx = 'typescript-react',
-  js = 'javascript',
-  jsx = 'typescript-react',
-  unknown = 'unknown',
-}
-
 enum GitFileStatus {
   new = 'U',
   modified = 'M',
@@ -13,4 +5,21 @@ enum GitFileStatus {
   none = 'N',
 }
 
-export { CodeLanguage, GitFileStatus };
+enum FileType {
+  image = 'image',
+  typescript = 'typescript',
+  javascript = 'javascript',
+  json = 'json',
+  typescriptReact = 'typescript-react',
+  javascriptReact = 'javascript-react',
+  css = 'css',
+  html = 'html',
+  rc = 'rc',
+  yaml = 'yaml',
+  md = 'md',
+  config = 'config',
+  folder = 'folder',
+  pinned = 'pinned',
+}
+
+export { FileType, GitFileStatus };

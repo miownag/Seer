@@ -1,52 +1,31 @@
-import type { CodeLanguage, GitFileStatus } from '@/constants/enums';
+import type { FileType, GitFileStatus } from '@/constants/enums';
+import type { TreeViewBaseItem } from '@mui/x-tree-view';
 
-type fileType = 'file';
-type folderType = 'folder';
-type fsItemType = fileType | folderType;
-
-interface IFsItemBase {
-  name: string;
+interface IFile {
+  id: string;
+  label: string;
   gitStatus: GitFileStatus;
-  parentFolder?: IFolder;
+  parentFolder?: IFile;
+  fileType: FileType;
+  children?: IFile[];
 }
-
-interface IFile extends IFsItemBase {
-  type: fileType;
-  language: CodeLanguage;
-}
-
-interface IFolder extends IFsItemBase {
-  type: folderType;
-  children: fsItem[];
-}
-
-type fsItem = IFile | IFolder;
 
 type State = {
-  fileTree: fsItem[];
-  selectedFsItem: fsItem | undefined;
-  expandedFolders: IFolder[];
+  fileTree: TreeViewBaseItem<IFile>[];
+  selectedFsItem: string | undefined;
+  expandedFolders: string[];
   aiVisible: boolean;
 };
 
 type Actions = {
-  createFsItem: (name: string, type: fsItemType) => void;
-  renameFsItem: (fsItem: fsItem, newName: string) => void;
-  editFileContent: (file: IFile, newContent: string) => void;
-  deleteFsItem: (fsItem: fsItem) => void;
-  expandFolders: (folders: IFolder[]) => void;
-  foldFolders: (folders: IFolder[], foldChildren?: boolean) => void;
-  selectFsItem: (fsItem: fsItem) => void;
+  createFsItem: (name: string, type: FileType) => void;
+  renameFsItem: (id: string, newName: string) => void;
+  editFileContent: (id: string, newContent: string) => void;
+  deleteFsItem: (id: string) => void;
+  expandFolders: (ids: string[]) => void;
+  foldFolders: (ids: string[], foldChildren?: boolean) => void;
+  selectFsItem: (id: string) => void;
   setAiVisible: (visible: boolean) => void;
 };
 
-export type {
-  fileType,
-  folderType,
-  IFile,
-  IFolder,
-  fsItem,
-  State,
-  Actions,
-  IFsItemBase,
-};
+export type { IFile, State, Actions };

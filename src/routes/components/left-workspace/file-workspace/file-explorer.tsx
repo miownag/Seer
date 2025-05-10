@@ -1,12 +1,11 @@
-import { MainStoreContext } from '@/stores';
+import type { FileType } from '@/constants/enums';
+import { useMainStore } from '@/stores';
+import type { IFile } from '@/stores/types';
 import ArticleIcon from '@mui/icons-material/Article';
-import DeleteIcon from '@mui/icons-material/Delete';
 import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import FolderRounded from '@mui/icons-material/FolderRounded';
 import ImageIcon from '@mui/icons-material/Image';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import VideoCameraBackIcon from '@mui/icons-material/VideoCameraBack';
 import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
 import Typography from '@mui/material/Typography';
@@ -28,59 +27,8 @@ import {
   useTreeItem,
 } from '@mui/x-tree-view/useTreeItem';
 import { animated, useSpring } from '@react-spring/web';
-import React, { useContext } from 'react';
-import { useStore } from 'zustand';
-
-type FileType =
-  | 'image'
-  | 'pdf'
-  | 'doc'
-  | 'video'
-  | 'folder'
-  | 'pinned'
-  | 'trash';
-
-type ExtendedTreeItemProps = {
-  fileType?: FileType;
-  id: string;
-  label: string;
-};
-
-// TODO: 从接口获取真正的items并存储在store中
-const ITEMS: TreeViewBaseItem<ExtendedTreeItemProps>[] = [
-  {
-    id: '1',
-    label: 'Documents',
-    children: [
-      {
-        id: '1.1',
-        label: 'Company',
-        children: [
-          { id: '1.1.1', label: 'Invoice', fileType: 'pdf' },
-          { id: '1.1.2', label: 'Meeting notes', fileType: 'doc' },
-          { id: '1.1.3', label: 'Tasks list', fileType: 'doc' },
-          { id: '1.1.4', label: 'Equipment', fileType: 'pdf' },
-          { id: '1.1.5', label: 'Video conference', fileType: 'video' },
-        ],
-      },
-      { id: '1.2', label: 'Personal', fileType: 'folder' },
-      { id: '1.3', label: 'Group photo', fileType: 'image' },
-    ],
-  },
-  {
-    id: '2',
-    label: 'Bookmarked',
-    fileType: 'pinned',
-    children: [
-      { id: '2.1', label: 'Learning materials', fileType: 'folder' },
-      { id: '2.2', label: 'News', fileType: 'folder' },
-      { id: '2.3', label: 'Forums', fileType: 'folder' },
-      { id: '2.4', label: 'Travel documents', fileType: 'pdf' },
-    ],
-  },
-  { id: '3', label: 'History', fileType: 'folder' },
-  { id: '4', label: 'Trash', fileType: 'trash' },
-];
+import { pick } from 'es-toolkit';
+import React from 'react';
 
 function DotIcon() {
   return (
@@ -230,18 +178,10 @@ const getIconFromFileType = (fileType: FileType) => {
   switch (fileType) {
     case 'image':
       return ImageIcon;
-    case 'pdf':
-      return PictureAsPdfIcon;
-    case 'doc':
-      return ArticleIcon;
-    case 'video':
-      return VideoCameraBackIcon;
     case 'folder':
       return FolderRounded;
     case 'pinned':
       return FolderOpenIcon;
-    case 'trash':
-      return DeleteIcon;
     default:
       return ArticleIcon;
   }
@@ -269,13 +209,12 @@ const CustomTreeItem = React.forwardRef(function CustomTreeItem(
     status,
   } = useTreeItem({ id, itemId, children, label, disabled, rootRef: ref });
 
-  // biome-ignore lint/style/noNonNullAssertion: <explanation>
-  const item = useTreeItemModel<ExtendedTreeItemProps>(itemId)!;
+  const item = useTreeItemModel<IFile>(itemId);
 
   let icon: typeof FolderRounded;
   if (status.expandable) {
     icon = FolderRounded;
-  } else if (item.fileType) {
+  } else if (item?.fileType) {
     icon = getIconFromFileType(item.fileType);
   } else {
     icon = DescriptionRoundedIcon;
@@ -303,18 +242,14 @@ const CustomTreeItem = React.forwardRef(function CustomTreeItem(
   );
 });
 
-export default function FileExplorer() {
-  // TODO: 获取真正的ITEMS
-  const store = useContext(MainStoreContext);
-  if (!store) throw new Error('Missing Provider in the tree');
-  const fileTree = useStore(store, (state) => state.fileTree);
-  console.log('测试', fileTree);
+const FileExplorer = () => {
+  const { fileTree, selectFsItem, selectedFsItem } = useMainStore((state) =>
+    pick(state, ['fileTree', 'selectFsItem', 'selectedFsItem']),
+  );
 
   return (
     <RichTreeView
-      items={ITEMS}
-      defaultExpandedItems={['1', '1.1']}
-      defaultSelectedItems="1.1"
+      items={fileTree}
       sx={{
         height: 'fit-content',
         flexGrow: 1,
@@ -323,6 +258,12 @@ export default function FileExplorer() {
       }}
       slots={{ item: CustomTreeItem }}
       itemChildrenIndentation={24}
+      selectedItems={selectedFsItem}
+      onSelectedItemsChange={(_, id) => {
+        id && selectFsItem(id);
+      }}
     />
   );
-}
+};
+
+export default FileExplorer;

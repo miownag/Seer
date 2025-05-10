@@ -1,10 +1,14 @@
 import { GitFileStatus } from '@/constants/enums';
+import { findTreeNode, traverseTree } from '@/utils';
+import { enableMapSet } from 'immer';
 import { createContext, useContext } from 'react';
 import { useStore } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { useShallow } from 'zustand/react/shallow';
 import { createStore } from 'zustand/vanilla';
-import type { Actions, IFile, IFolder, State } from './types';
+import type { Actions, IFile, State } from './types';
+
+enableMapSet();
 
 const mainStore = createStore<State & Actions>()(
   immer((set) => ({
@@ -12,30 +16,38 @@ const mainStore = createStore<State & Actions>()(
     selectedFsItem: undefined,
     expandedFolders: [],
     aiVisible: false,
-    createFsItem: (name, type) => {
+    createFsItem: (label, fileType) => {
       set((state) => {
         const { fileTree, selectedFsItem } = state;
-        const baseItem = {
-          name,
-          type,
+        const [selectedFsItemNode, parentNode] = findTreeNode(
+          fileTree,
+          selectedFsItem ?? '',
+        );
+        const newFileItem: IFile = {
+          id: `${Date.now()}-${Math.random()}-${fileType}`,
+          label,
+          fileType,
           gitStatus: GitFileStatus.new,
         };
-        if (type === 'folder') {
-          (baseItem as IFolder).children = [];
+        if (fileType === 'folder') {
+          newFileItem.children = [];
         }
         if (
-          !selectedFsItem ||
-          (selectedFsItem.type === 'file' && !selectedFsItem.parentFolder)
+          !selectedFsItemNode ||
+          (selectedFsItemNode.fileType !== 'folder' &&
+            selectedFsItemNode.fileType !== 'pinned' &&
+            !selectedFsItemNode.parentFolder)
         ) {
-          fileTree.push(baseItem as IFile);
-          return state;
+          fileTree.push(newFileItem);
+          return;
         }
-        const parentFolder =
-          selectedFsItem.type === 'file'
-            ? (selectedFsItem.parentFolder as IFolder)
-            : selectedFsItem;
-        parentFolder.children.push(baseItem as IFile);
-        return state;
+        const parentFolder = (
+          selectedFsItemNode.fileType === 'folder'
+            ? selectedFsItemNode
+            : parentNode
+        ) as IFile;
+        newFileItem.parentFolder = parentFolder;
+        parentFolder.children?.push(newFileItem);
       });
     },
     renameFsItem: (fsItem, newName) => {},
@@ -43,7 +55,12 @@ const mainStore = createStore<State & Actions>()(
     deleteFsItem: (fsItem) => {},
     expandFolders: (folders) => {},
     foldFolders: (folders, foldChildren = false) => {},
-    selectFsItem: (fsItem) => {},
+    selectFsItem: (id) => {
+      set((state) => {
+        state.selectedFsItem = id;
+        return state;
+      });
+    },
     setAiVisible: (visible) => {
       set((state) => {
         if (state.aiVisible !== visible) {
