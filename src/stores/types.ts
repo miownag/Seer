@@ -23,7 +23,7 @@ type Actions = {
   editFileContent: (id: string, newContent: string) => void;
   deleteFsItem: (id: string) => void;
   expandFolders: (ids: string[]) => void;
-  foldFolders: (ids: string[], foldChildren?: boolean) => void;
+  foldFolders: (ids: string[] | 'all', foldChildren?: boolean) => void;
   selectFsItem: (id: string) => void;
   setAiVisible: (visible: boolean) => void;
 };

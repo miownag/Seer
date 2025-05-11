@@ -1,4 +1,3 @@
-import { Box } from '@mui/material';
 import * as monaco from 'monaco-editor';
 import type React from 'react';
 import { type FC, useEffect, useRef } from 'react';

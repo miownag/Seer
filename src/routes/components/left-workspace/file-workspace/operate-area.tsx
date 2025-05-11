@@ -1,4 +1,5 @@
 import TooltipIconButton from '@/components/tooltip-icon-button';
+import { FileType } from '@/constants/enums';
 import { useMainStore } from '@/stores';
 import CreateNewFolderRoundedIcon from '@mui/icons-material/CreateNewFolderRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
@@ -8,10 +9,9 @@ import { Box, Stack } from '@mui/material';
 import { pick } from 'es-toolkit';
 
 const OperateArea = () => {
-  const { fileTree, selectedFsItem, createFsItem, deleteFsItem, foldFolders } =
+  const { selectedFsItem, createFsItem, deleteFsItem, foldFolders } =
     useMainStore((state) =>
       pick(state, [
-        'fileTree',
         'selectedFsItem',
         'createFsItem',
         'deleteFsItem',
@@ -24,13 +24,17 @@ const OperateArea = () => {
       <Stack direction="row">
         <TooltipIconButton
           content="新建文件"
-          buttonProps={{ onClick: () => createFsItem('test.ts', 'file') }}
+          buttonProps={{
+            onClick: () => createFsItem('test.ts', FileType.typescript),
+          }}
         >
           <NoteAddRoundedIcon fontSize="small" />
         </TooltipIconButton>
         <TooltipIconButton
           content="新建文件夹"
-          buttonProps={{ onClick: () => createFsItem('test', 'folder') }}
+          buttonProps={{
+            onClick: () => createFsItem('test', FileType.folder),
+          }}
         >
           <CreateNewFolderRoundedIcon fontSize="small" />
         </TooltipIconButton>
@@ -50,10 +54,7 @@ const OperateArea = () => {
           content="折叠"
           buttonProps={{
             onClick: () => {
-              foldFolders(
-                fileTree.filter((i) => i.type === 'folder'),
-                true,
-              );
+              foldFolders('all');
             },
           }}
         >

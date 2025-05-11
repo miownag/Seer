@@ -1,11 +1,8 @@
-import type { FileType } from '@/constants/enums';
+import { FILE_TYPE_ICON_MAP } from '@/constants';
 import { useMainStore } from '@/stores';
 import type { IFile } from '@/stores/types';
-import ArticleIcon from '@mui/icons-material/Article';
 import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
-import FolderRounded from '@mui/icons-material/FolderRounded';
-import ImageIcon from '@mui/icons-material/Image';
 import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
 import Typography from '@mui/material/Typography';
@@ -21,7 +18,6 @@ import { TreeItemDragAndDropOverlay } from '@mui/x-tree-view/TreeItemDragAndDrop
 import { TreeItemIcon } from '@mui/x-tree-view/TreeItemIcon';
 import { TreeItemProvider } from '@mui/x-tree-view/TreeItemProvider';
 import { useTreeItemModel } from '@mui/x-tree-view/hooks';
-import type { TreeViewBaseItem } from '@mui/x-tree-view/models';
 import {
   type UseTreeItemParameters,
   useTreeItem,
@@ -30,28 +26,21 @@ import { animated, useSpring } from '@react-spring/web';
 import { pick } from 'es-toolkit';
 import React from 'react';
 
-function DotIcon() {
-  return (
-    <Box
-      sx={{
-        width: 6,
-        height: 6,
-        borderRadius: '70%',
-        bgcolor: 'warning.main',
-        display: 'inline-block',
-        verticalAlign: 'middle',
-        zIndex: 1,
-        mx: 1,
-      }}
-    />
-  );
-}
 declare module 'react' {
   interface CSSProperties {
     '--tree-view-color'?: string;
     '--tree-view-bg-color'?: string;
   }
 }
+interface CustomLabelProps {
+  children: React.ReactNode;
+  icon?: React.ElementType;
+  expandable?: boolean;
+}
+
+interface CustomTreeItemProps
+  extends Omit<UseTreeItemParameters, 'rootRef'>,
+    Omit<React.HTMLAttributes<HTMLLIElement>, 'onFocus'> {}
 
 const TreeItemRoot = styled('li')(({ theme }) => ({
   listStyle: 'none',
@@ -122,7 +111,7 @@ const CustomCollapse = styled(Collapse)({
 
 const AnimatedCollapse = animated(CustomCollapse);
 
-function TransitionComponent(props: TransitionProps) {
+const TransitionComponent = (props: TransitionProps) => {
   const style = useSpring({
     to: {
       opacity: props.in ? 1 : 0,
@@ -131,7 +120,7 @@ function TransitionComponent(props: TransitionProps) {
   });
 
   return <AnimatedCollapse style={style} {...props} />;
-}
+};
 
 const TreeItemLabelText = styled(Typography)({
   color: 'inherit',
@@ -139,108 +128,100 @@ const TreeItemLabelText = styled(Typography)({
   fontWeight: 500,
 });
 
-interface CustomLabelProps {
-  children: React.ReactNode;
-  icon?: React.ElementType;
-  expandable?: boolean;
-}
-
-function CustomLabel({
+const CustomLabel = ({
   icon: Icon,
   expandable,
   children,
   ...other
-}: CustomLabelProps) {
-  return (
-    <TreeItemLabel
-      {...other}
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-      }}
-    >
-      {Icon && (
-        <Box
-          component={Icon}
-          className="labelIcon"
-          color="inherit"
-          sx={{ mr: 1, fontSize: '1.2rem' }}
-        />
-      )}
+}: CustomLabelProps) => (
+  <TreeItemLabel
+    {...other}
+    sx={{
+      display: 'flex',
+      alignItems: 'center',
+    }}
+  >
+    {Icon && (
+      <Box
+        component={Icon}
+        className="labelIcon"
+        color="inherit"
+        sx={{
+          mr: 1,
+          fontSize: '1.2rem',
+          width: '1.2rem', // 添加宽度控制
+          height: '1.2rem', // 添加高度控制
+        }}
+      />
+    )}
 
-      <TreeItemLabelText variant="body2">{children}</TreeItemLabelText>
-      {expandable && <DotIcon />}
-    </TreeItemLabel>
-  );
-}
+    <TreeItemLabelText variant="body2">{children}</TreeItemLabelText>
+    {expandable && (
+      <Box
+        sx={{
+          width: 6,
+          height: 6,
+          borderRadius: '70%',
+          bgcolor: 'warning.main',
+          display: 'inline-block',
+          verticalAlign: 'middle',
+          zIndex: 1,
+          mx: 1,
+        }}
+      />
+    )}
+  </TreeItemLabel>
+);
 
-const getIconFromFileType = (fileType: FileType) => {
-  switch (fileType) {
-    case 'image':
-      return ImageIcon;
-    case 'folder':
-      return FolderRounded;
-    case 'pinned':
-      return FolderOpenIcon;
-    default:
-      return ArticleIcon;
-  }
-};
+const CustomTreeItem = React.forwardRef(
+  (props: CustomTreeItemProps, ref: React.Ref<HTMLLIElement>) => {
+    const { id, itemId, label, disabled, children, ...other } = props;
 
-interface CustomTreeItemProps
-  extends Omit<UseTreeItemParameters, 'rootRef'>,
-    Omit<React.HTMLAttributes<HTMLLIElement>, 'onFocus'> {}
+    const {
+      getContextProviderProps,
+      getRootProps,
+      getContentProps,
+      getIconContainerProps,
+      getCheckboxProps,
+      getLabelProps,
+      getGroupTransitionProps,
+      getDragAndDropOverlayProps,
+      status,
+    } = useTreeItem({ id, itemId, children, label, disabled, rootRef: ref });
 
-const CustomTreeItem = React.forwardRef(function CustomTreeItem(
-  props: CustomTreeItemProps,
-  ref: React.Ref<HTMLLIElement>,
-) {
-  const { id, itemId, label, disabled, children, ...other } = props;
+    const item = useTreeItemModel<IFile>(itemId);
 
-  const {
-    getContextProviderProps,
-    getRootProps,
-    getContentProps,
-    getIconContainerProps,
-    getCheckboxProps,
-    getLabelProps,
-    getGroupTransitionProps,
-    getDragAndDropOverlayProps,
-    status,
-  } = useTreeItem({ id, itemId, children, label, disabled, rootRef: ref });
+    let icon: typeof FolderOpenIcon;
+    if (status.expanded) {
+      icon = FolderOpenIcon;
+    } else if (item?.fileType) {
+      icon = FILE_TYPE_ICON_MAP[item.fileType] ?? '';
+    } else {
+      icon = DescriptionRoundedIcon;
+    }
 
-  const item = useTreeItemModel<IFile>(itemId);
-
-  let icon: typeof FolderRounded;
-  if (status.expandable) {
-    icon = FolderRounded;
-  } else if (item?.fileType) {
-    icon = getIconFromFileType(item.fileType);
-  } else {
-    icon = DescriptionRoundedIcon;
-  }
-
-  return (
-    <TreeItemProvider {...getContextProviderProps()}>
-      <TreeItemRoot {...getRootProps(other)}>
-        <TreeItemContent {...getContentProps()}>
-          <TreeItemIconContainer {...getIconContainerProps()}>
-            <TreeItemIcon status={status} />
-          </TreeItemIconContainer>
-          <TreeItemCheckbox {...getCheckboxProps()} />
-          <CustomLabel
-            {...getLabelProps({
-              icon,
-              expandable: status.expandable && status.expanded,
-            })}
-          />
-          <TreeItemDragAndDropOverlay {...getDragAndDropOverlayProps()} />
-        </TreeItemContent>
-        {children && <TransitionComponent {...getGroupTransitionProps()} />}
-      </TreeItemRoot>
-    </TreeItemProvider>
-  );
-});
+    return (
+      <TreeItemProvider {...getContextProviderProps()}>
+        <TreeItemRoot {...getRootProps(other)}>
+          <TreeItemContent {...getContentProps()}>
+            <TreeItemIconContainer {...getIconContainerProps()}>
+              <TreeItemIcon status={status} />
+            </TreeItemIconContainer>
+            <TreeItemCheckbox {...getCheckboxProps()} />
+            <CustomLabel
+              {...getLabelProps({
+                icon,
+                expandable: status.expandable && status.expanded,
+              })}
+            />
+            <TreeItemDragAndDropOverlay {...getDragAndDropOverlayProps()} />
+          </TreeItemContent>
+          {children && <TransitionComponent {...getGroupTransitionProps()} />}
+        </TreeItemRoot>
+      </TreeItemProvider>
+    );
+  },
+);
 
 const FileExplorer = () => {
   const { fileTree, selectFsItem, selectedFsItem } = useMainStore((state) =>
@@ -254,7 +235,6 @@ const FileExplorer = () => {
         height: 'fit-content',
         flexGrow: 1,
         maxWidth: 400,
-        overflowY: 'auto',
       }}
       slots={{ item: CustomTreeItem }}
       itemChildrenIndentation={24}

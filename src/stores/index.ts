@@ -24,7 +24,7 @@ const mainStore = createStore<State & Actions>()(
           selectedFsItem ?? '',
         );
         const newFileItem: IFile = {
-          id: `${Date.now()}-${Math.random()}-${fileType}`,
+          id: `${Date.now()}-${Math.random()}-${label}`,
           label,
           fileType,
           gitStatus: GitFileStatus.new,

@@ -1,9 +1,4 @@
-import {
-  type ExtendButtonBase,
-  IconButton,
-  type IconButtonTypeMap,
-  Tooltip,
-} from '@mui/material';
+import { IconButton, Tooltip } from '@mui/material';
 import type { FC, ReactElement } from 'react';
 
 interface IProps {
