@@ -6,7 +6,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
 import Typography from '@mui/material/Typography';
-import { alpha, styled } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import type { TransitionProps } from '@mui/material/transitions';
 import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
 import {
@@ -71,10 +71,6 @@ const TreeItemContent = styled('div')(({ theme }) => ({
   marginTop: theme.spacing(0.5),
   fontWeight: 500,
   '&[data-expanded]:not([data-focused], [data-selected]) .labelIcon': {
-    color: theme.palette.primary.dark,
-    ...theme.applyStyles('light', {
-      color: theme.palette.primary.main,
-    }),
     '&::before': {
       content: '""',
       display: 'block',
@@ -83,25 +79,17 @@ const TreeItemContent = styled('div')(({ theme }) => ({
       top: '44px',
       height: 'calc(100% - 48px)',
       width: '1.5px',
-      backgroundColor: theme.palette.grey[700],
+      backgroundColor: '#f1f5f9',
       ...theme.applyStyles('light', {
         backgroundColor: theme.palette.grey[300],
       }),
     },
   },
   '&[data-focused], &[data-selected]': {
-    backgroundColor: theme.palette.primary.dark,
-    color: theme.palette.primary.contrastText,
-    ...theme.applyStyles('light', {
-      backgroundColor: theme.palette.primary.main,
-    }),
+    backgroundColor: '#f1f5f9',
   },
   '&:not([data-focused], [data-selected]):hover': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.1),
-    color: 'white',
-    ...theme.applyStyles('light', {
-      color: theme.palette.primary.main,
-    }),
+    backgroundColor: 'rgba(241, 245, 249, 0.6)',
   },
 }));
 
@@ -115,7 +103,7 @@ const TransitionComponent = (props: TransitionProps) => {
   const style = useSpring({
     to: {
       opacity: props.in ? 1 : 0,
-      transform: `translate3d(0,${props.in ? 0 : 20}px,0)`,
+      transform: `translate3d(0, ${props.in ? 0 : 20}px, 0)`,
     },
   });
 
@@ -236,7 +224,9 @@ const FileExplorer = () => {
         flexGrow: 1,
         maxWidth: 400,
       }}
-      slots={{ item: CustomTreeItem }}
+      slots={{
+        item: CustomTreeItem,
+      }}
       itemChildrenIndentation={24}
       selectedItems={selectedFsItem}
       onSelectedItemsChange={(_, id) => {
