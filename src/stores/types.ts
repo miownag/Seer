@@ -18,7 +18,7 @@ type State = {
 };
 
 type Actions = {
-  createFsItem: (name: string, type: FileType) => void;
+  createFsItem: (name: string, type: FileType) => string;
   renameFsItem: (id: string, newName: string) => void;
   editFileContent: (id: string, newContent: string) => void;
   deleteFsItem: (id: string) => void;

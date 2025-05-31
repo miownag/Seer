@@ -6,9 +6,35 @@ import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import NoteAddRoundedIcon from '@mui/icons-material/NoteAddRounded';
 import UnfoldLessRoundedIcon from '@mui/icons-material/UnfoldLessRounded';
 import { Box, Stack } from '@mui/material';
+import type {
+  TreeViewPublicAPI,
+  UseTreeViewExpansionSignature,
+  UseTreeViewFocusSignature,
+  UseTreeViewItemsSignature,
+  UseTreeViewKeyboardNavigationSignature,
+  UseTreeViewLabelSignature,
+  UseTreeViewSelectionSignature,
+} from '@mui/x-tree-view/internals';
 import { pick } from 'es-toolkit';
+import type { RefObject } from 'react';
 
-const OperateArea = () => {
+const OperateArea = ({
+  apiRef,
+}: {
+  apiRef: RefObject<
+    | TreeViewPublicAPI<
+        readonly [
+          UseTreeViewItemsSignature,
+          UseTreeViewExpansionSignature,
+          UseTreeViewSelectionSignature,
+          UseTreeViewFocusSignature,
+          UseTreeViewKeyboardNavigationSignature,
+          UseTreeViewLabelSignature,
+        ]
+      >
+    | undefined
+  >;
+}) => {
   const { selectedFsItem, createFsItem, deleteFsItem, foldFolders } =
     useMainStore((state) =>
       pick(state, [
@@ -25,7 +51,12 @@ const OperateArea = () => {
         <TooltipIconButton
           content="新建文件"
           buttonProps={{
-            onClick: () => createFsItem('test.ts', FileType.typescript),
+            onClick: () => {
+              const newId = createFsItem('test.ts', FileType.typescript);
+              requestAnimationFrame(() => {
+                apiRef.current?.setEditedItem(newId);
+              });
+            },
           }}
         >
           <NoteAddRoundedIcon fontSize="small" />

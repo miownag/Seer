@@ -31,7 +31,7 @@
     "@modern-js/runtime": "2.67.3",
     "@mui/icons-material": "7.0.2",
     "@mui/material": "7.0.2",
-    "@mui/x-tree-view": "^8.1.0",
+    "@mui/x-tree-view": "^8.5.0",
     "@react-spring/web": "^9.7.5",
     "es-toolkit": "^1.36.0",
     "immer": "^10.1.1",

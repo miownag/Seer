@@ -1,11 +1,13 @@
-import FileExplorer from './file-explorer';
+import { useTreeViewApiRef } from '@mui/x-tree-view/hooks';
+import FileTree from './file-tree';
 import OperateArea from './operate-area';
 
 const FileWorkspace = () => {
+  const apiRef = useTreeViewApiRef();
   return (
     <>
-      <OperateArea />
-      <FileExplorer />
+      <OperateArea apiRef={apiRef} />
+      <FileTree apiRef={apiRef} />
     </>
   );
 };

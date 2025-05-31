@@ -17,6 +17,7 @@ const mainStore = createStore<State & Actions>()(
     expandedFolders: [],
     aiVisible: false,
     createFsItem: (label, fileType) => {
+      const newId = `${Date.now()}-${Math.random()}-${label}`;
       set((state) => {
         const { fileTree, selectedFsItem } = state;
         const [selectedFsItemNode, parentNode] = findTreeNode(
@@ -24,7 +25,7 @@ const mainStore = createStore<State & Actions>()(
           selectedFsItem ?? '',
         );
         const newFileItem: IFile = {
-          id: `${Date.now()}-${Math.random()}-${label}`,
+          id: newId,
           label,
           fileType,
           gitStatus: GitFileStatus.new,
@@ -49,8 +50,16 @@ const mainStore = createStore<State & Actions>()(
         newFileItem.parentFolder = parentFolder;
         parentFolder.children?.push(newFileItem);
       });
+      return newId;
     },
-    renameFsItem: (fsItem, newName) => {},
+    renameFsItem: (fsItem, newName) => {
+      set((state) => {
+        const { fileTree } = state;
+        const [fsItemNode] = findTreeNode(fileTree, fsItem);
+        if (!fsItemNode) return;
+        fsItemNode.label = newName;
+      });
+    },
     editFileContent: (file, newContent) => {},
     deleteFsItem: (fsItem) => {},
     expandFolders: (folders) => {},

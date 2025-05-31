@@ -18,13 +18,22 @@ import { TreeItemDragAndDropOverlay } from '@mui/x-tree-view/TreeItemDragAndDrop
 import { TreeItemIcon } from '@mui/x-tree-view/TreeItemIcon';
 import { TreeItemProvider } from '@mui/x-tree-view/TreeItemProvider';
 import { useTreeItemModel } from '@mui/x-tree-view/hooks';
+import type {
+  TreeViewPublicAPI,
+  UseTreeViewExpansionSignature,
+  UseTreeViewFocusSignature,
+  UseTreeViewItemsSignature,
+  UseTreeViewKeyboardNavigationSignature,
+  UseTreeViewLabelSignature,
+  UseTreeViewSelectionSignature,
+} from '@mui/x-tree-view/internals';
 import {
   type UseTreeItemParameters,
   useTreeItem,
 } from '@mui/x-tree-view/useTreeItem';
 import { animated, useSpring } from '@react-spring/web';
 import { pick } from 'es-toolkit';
-import React from 'react';
+import React, { type RefObject } from 'react';
 
 declare module 'react' {
   interface CSSProperties {
@@ -174,6 +183,7 @@ const CustomTreeItem = React.forwardRef(
       getLabelProps,
       getGroupTransitionProps,
       getDragAndDropOverlayProps,
+      getLabelInputProps,
       status,
     } = useTreeItem({ id, itemId, children, label, disabled, rootRef: ref });
 
@@ -196,12 +206,19 @@ const CustomTreeItem = React.forwardRef(
               <TreeItemIcon status={status} />
             </TreeItemIconContainer>
             <TreeItemCheckbox {...getCheckboxProps()} />
-            <CustomLabel
-              {...getLabelProps({
-                icon,
-                expandable: status.expandable && status.expanded,
-              })}
-            />
+            {status.editing ? (
+              <input
+                {...getLabelInputProps()}
+                className="border-none bg-transparent outline-none w-full"
+              />
+            ) : (
+              <CustomLabel
+                {...getLabelProps({
+                  icon,
+                  expandable: status.expandable && status.expanded,
+                })}
+              />
+            )}
             <TreeItemDragAndDropOverlay {...getDragAndDropOverlayProps()} />
           </TreeItemContent>
           {children && <TransitionComponent {...getGroupTransitionProps()} />}
@@ -211,9 +228,31 @@ const CustomTreeItem = React.forwardRef(
   },
 );
 
-const FileExplorer = () => {
-  const { fileTree, selectFsItem, selectedFsItem } = useMainStore((state) =>
-    pick(state, ['fileTree', 'selectFsItem', 'selectedFsItem']),
+const FileTree = ({
+  apiRef,
+}: {
+  apiRef: RefObject<
+    | TreeViewPublicAPI<
+        readonly [
+          UseTreeViewItemsSignature,
+          UseTreeViewExpansionSignature,
+          UseTreeViewSelectionSignature,
+          UseTreeViewFocusSignature,
+          UseTreeViewKeyboardNavigationSignature,
+          UseTreeViewLabelSignature,
+        ]
+      >
+    | undefined
+  >;
+}) => {
+  const { fileTree, selectFsItem, selectedFsItem, renameFsItem } = useMainStore(
+    (state) =>
+      pick(state, [
+        'fileTree',
+        'selectFsItem',
+        'selectedFsItem',
+        'renameFsItem',
+      ]),
   );
 
   return (
@@ -227,6 +266,9 @@ const FileExplorer = () => {
       slots={{
         item: CustomTreeItem,
       }}
+      apiRef={apiRef}
+      isItemEditable={true}
+      onItemLabelChange={renameFsItem}
       itemChildrenIndentation={24}
       selectedItems={selectedFsItem}
       onSelectedItemsChange={(_, id) => {
@@ -236,4 +278,4 @@ const FileExplorer = () => {
   );
 };
 
-export default FileExplorer;
+export default FileTree;
