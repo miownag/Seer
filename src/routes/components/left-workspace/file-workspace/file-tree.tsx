@@ -1,10 +1,27 @@
 import { FILE_TYPE_ICON_MAP } from '@/constants';
 import { useMainStore } from '@/stores';
 import type { IFile } from '@/stores/types';
+import {
+  Cloud,
+  ContentCopy,
+  ContentCut,
+  ContentPaste,
+} from '@mui/icons-material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
+import EditIcon from '@mui/icons-material/Edit';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import {
+  Divider,
+  ListItemIcon,
+  ListItemText,
+  MenuList,
+  Paper,
+} from '@mui/material';
 import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import type { TransitionProps } from '@mui/material/transitions';
@@ -34,6 +51,7 @@ import {
 import { animated, useSpring } from '@react-spring/web';
 import { pick } from 'es-toolkit';
 import React, { type RefObject } from 'react';
+import { useState } from 'react';
 
 declare module 'react' {
   interface CSSProperties {
@@ -173,6 +191,29 @@ const CustomLabel = ({
 const CustomTreeItem = React.forwardRef(
   (props: CustomTreeItemProps, ref: React.Ref<HTMLLIElement>) => {
     const { id, itemId, label, disabled, children, ...other } = props;
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+    const [menuPosition, setMenuPosition] = useState<
+      | {
+          top: number;
+          left: number;
+        }
+      | undefined
+    >();
+
+    const handleContextMenu = (event: React.MouseEvent) => {
+      console.log('handleContextMenu', event);
+      event.preventDefault();
+      setAnchorEl(event.currentTarget as HTMLElement);
+      setMenuPosition({
+        top: event.clientY,
+        left: event.clientX,
+      });
+    };
+
+    const handleMenuClose = () => {
+      setAnchorEl(null);
+      setMenuPosition(void 0);
+    };
 
     const {
       getContextProviderProps,
@@ -201,7 +242,10 @@ const CustomTreeItem = React.forwardRef(
     return (
       <TreeItemProvider {...getContextProviderProps()}>
         <TreeItemRoot {...getRootProps(other)}>
-          <TreeItemContent {...getContentProps()}>
+          <TreeItemContent
+            {...getContentProps()}
+            onContextMenu={handleContextMenu}
+          >
             <TreeItemIconContainer {...getIconContainerProps()}>
               <TreeItemIcon status={status} />
             </TreeItemIconContainer>
@@ -222,6 +266,65 @@ const CustomTreeItem = React.forwardRef(
             <TreeItemDragAndDropOverlay {...getDragAndDropOverlayProps()} />
           </TreeItemContent>
           {children && <TransitionComponent {...getGroupTransitionProps()} />}
+          <Menu
+            anchorReference="anchorPosition"
+            anchorPosition={menuPosition}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'left',
+            }}
+            open={Boolean(anchorEl && menuPosition)}
+            onClose={handleMenuClose}
+            disableScrollLock={true}
+          >
+            <MenuList className="w-[180px]" style={{ padding: 0 }}>
+              <MenuItem>
+                <ListItemIcon>
+                  <EditIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>重命名</ListItemText>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                  ⌘R
+                </Typography>
+              </MenuItem>
+              <MenuItem>
+                <ListItemIcon>
+                  <DeleteIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>删除</ListItemText>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                  ⌘D
+                </Typography>
+              </MenuItem>
+              <MenuItem>
+                <ListItemIcon>
+                  <ContentCut fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>剪切</ListItemText>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                  ⌘X
+                </Typography>
+              </MenuItem>
+              <MenuItem>
+                <ListItemIcon>
+                  <ContentCopy fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>复制</ListItemText>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                  ⌘C
+                </Typography>
+              </MenuItem>
+              <MenuItem>
+                <ListItemIcon>
+                  <ContentPaste fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>粘贴</ListItemText>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                  ⌘V
+                </Typography>
+              </MenuItem>
+            </MenuList>
+          </Menu>
         </TreeItemRoot>
       </TreeItemProvider>
     );
