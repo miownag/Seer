@@ -1,5 +1,5 @@
 import { GitFileStatus } from '@/constants/enums';
-import { findTreeNode, traverseTree } from '@/utils';
+import { findTreeNode } from '@/utils';
 import { enableMapSet } from 'immer';
 import { createContext, useContext } from 'react';
 import { useStore } from 'zustand';
@@ -52,12 +52,13 @@ const mainStore = createStore<State & Actions>()(
       });
       return newId;
     },
-    renameFsItem: (fsItem, newName) => {
+    renameFsItem: (fsItem, newName, fileType) => {
       set((state) => {
         const { fileTree } = state;
         const [fsItemNode] = findTreeNode(fileTree, fsItem);
         if (!fsItemNode) return;
         fsItemNode.label = newName;
+        fsItemNode.fileType = fileType;
       });
     },
     editFileContent: (file, newContent) => {},

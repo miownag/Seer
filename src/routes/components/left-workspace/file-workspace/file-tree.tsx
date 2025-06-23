@@ -1,23 +1,14 @@
 import { FILE_TYPE_ICON_MAP } from '@/constants';
+import { useUpdate } from '@/hooks';
 import { useMainStore } from '@/stores';
 import type { IFile } from '@/stores/types';
-import {
-  Cloud,
-  ContentCopy,
-  ContentCut,
-  ContentPaste,
-} from '@mui/icons-material';
+import { getFileTypeByName } from '@/utils';
+import { ContentCopy, ContentCut, ContentPaste } from '@mui/icons-material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
 import EditIcon from '@mui/icons-material/Edit';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
-import {
-  Divider,
-  ListItemIcon,
-  ListItemText,
-  MenuList,
-  Paper,
-} from '@mui/material';
+import { ListItemIcon, ListItemText, MenuList } from '@mui/material';
 import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
 import Menu from '@mui/material/Menu';
@@ -34,7 +25,7 @@ import {
 import { TreeItemDragAndDropOverlay } from '@mui/x-tree-view/TreeItemDragAndDropOverlay';
 import { TreeItemIcon } from '@mui/x-tree-view/TreeItemIcon';
 import { TreeItemProvider } from '@mui/x-tree-view/TreeItemProvider';
-import { useTreeItemModel } from '@mui/x-tree-view/hooks';
+import { useTreeItemModel, useTreeItemUtils } from '@mui/x-tree-view/hooks';
 import type {
   TreeViewPublicAPI,
   UseTreeViewExpansionSignature,
@@ -64,6 +55,20 @@ interface CustomLabelProps {
   icon?: React.ElementType;
   expandable?: boolean;
 }
+
+type apiRefType = RefObject<
+  | TreeViewPublicAPI<
+      readonly [
+        UseTreeViewItemsSignature,
+        UseTreeViewExpansionSignature,
+        UseTreeViewSelectionSignature,
+        UseTreeViewFocusSignature,
+        UseTreeViewKeyboardNavigationSignature,
+        UseTreeViewLabelSignature,
+      ]
+    >
+  | undefined
+>;
 
 interface CustomTreeItemProps
   extends Omit<UseTreeItemParameters, 'rootRef'>,
@@ -201,7 +206,6 @@ const CustomTreeItem = React.forwardRef(
     >();
 
     const handleContextMenu = (event: React.MouseEvent) => {
-      console.log('handleContextMenu', event);
       event.preventDefault();
       setAnchorEl(event.currentTarget as HTMLElement);
       setMenuPosition({
@@ -225,8 +229,12 @@ const CustomTreeItem = React.forwardRef(
       getGroupTransitionProps,
       getDragAndDropOverlayProps,
       getLabelInputProps,
-      status,
     } = useTreeItem({ id, itemId, children, label, disabled, rootRef: ref });
+
+    const { interactions, status } = useTreeItemUtils({
+      itemId: props.itemId,
+      children: props.children,
+    });
 
     const item = useTreeItemModel<IFile>(itemId);
 
@@ -253,7 +261,7 @@ const CustomTreeItem = React.forwardRef(
             {status.editing ? (
               <input
                 {...getLabelInputProps()}
-                className="border-none bg-transparent outline-none w-full"
+                className="border-none bg-transparent outline-none w-full text-sm"
               />
             ) : (
               <CustomLabel
@@ -278,13 +286,17 @@ const CustomTreeItem = React.forwardRef(
             disableScrollLock={true}
           >
             <MenuList className="w-[180px]" style={{ padding: 0 }}>
-              <MenuItem>
+              <MenuItem
+                onClick={() => {
+                  interactions.toggleItemEditing();
+                }}
+              >
                 <ListItemIcon>
                   <EditIcon fontSize="small" />
                 </ListItemIcon>
                 <ListItemText>重命名</ListItemText>
                 <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  ⌘R
+                  ⌘N
                 </Typography>
               </MenuItem>
               <MenuItem>
@@ -334,19 +346,7 @@ const CustomTreeItem = React.forwardRef(
 const FileTree = ({
   apiRef,
 }: {
-  apiRef: RefObject<
-    | TreeViewPublicAPI<
-        readonly [
-          UseTreeViewItemsSignature,
-          UseTreeViewExpansionSignature,
-          UseTreeViewSelectionSignature,
-          UseTreeViewFocusSignature,
-          UseTreeViewKeyboardNavigationSignature,
-          UseTreeViewLabelSignature,
-        ]
-      >
-    | undefined
-  >;
+  apiRef: apiRefType;
 }) => {
   const { fileTree, selectFsItem, selectedFsItem, renameFsItem } = useMainStore(
     (state) =>
@@ -370,8 +370,10 @@ const FileTree = ({
         item: CustomTreeItem,
       }}
       apiRef={apiRef}
-      isItemEditable={true}
-      onItemLabelChange={renameFsItem}
+      isItemEditable
+      onItemLabelChange={(id, newName) => {
+        renameFsItem(id, newName, getFileTypeByName(newName));
+      }}
       itemChildrenIndentation={24}
       selectedItems={selectedFsItem}
       onSelectedItemsChange={(_, id) => {

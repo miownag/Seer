@@ -1,3 +1,5 @@
+import { FILE_TYPE_SUFFIX_MAP } from '@/constants';
+
 const getErrorMessage = (error: unknown) => {
   if (error instanceof Error) return error.message;
   return String(error);
@@ -32,4 +34,15 @@ const findTreeNode = <T extends { id: string; children?: T[] }>(
   return [];
 };
 
-export { getErrorMessage, traverseTree, findTreeNode };
+const getFileTypeByName = (fileName: string) => {
+  if (!fileName) {
+    return;
+  }
+  const fileType = fileName.split('.').pop();
+  if (!fileType || !(fileType in FILE_TYPE_SUFFIX_MAP)) {
+    return;
+  }
+  return FILE_TYPE_SUFFIX_MAP[fileType as keyof typeof FILE_TYPE_SUFFIX_MAP];
+};
+
+export { getErrorMessage, traverseTree, findTreeNode, getFileTypeByName };

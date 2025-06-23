@@ -29,4 +29,21 @@ const FILE_TYPE_ICON_MAP = {
   [FileType.pinned]: FolderRoundedIcon,
 };
 
-export { FILE_TYPE_ICON_MAP };
+const FILE_TYPE_SUFFIX_MAP = {
+  png: FileType.image,
+  ts: FileType.typescript,
+  js: FileType.javascript,
+  json: FileType.json,
+  tsx: FileType.typescriptReact,
+  jsx: FileType.javascriptReact,
+  css: FileType.css,
+  html: FileType.html,
+  rc: FileType.rc,
+  yaml: FileType.yaml,
+  md: FileType.md,
+  config: FileType.config,
+  folder: FileType.folder,
+  pinned: FileType.pinned,
+};
+
+export { FILE_TYPE_ICON_MAP, FILE_TYPE_SUFFIX_MAP };

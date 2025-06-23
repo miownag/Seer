@@ -6,7 +6,7 @@ interface IFile {
   label: string;
   gitStatus: GitFileStatus;
   parentFolder?: IFile;
-  fileType: FileType;
+  fileType?: FileType;
   children?: IFile[];
 }
 
@@ -18,8 +18,8 @@ type State = {
 };
 
 type Actions = {
-  createFsItem: (name: string, type: FileType) => string;
-  renameFsItem: (id: string, newName: string) => void;
+  createFsItem: (name: string, type?: FileType) => string;
+  renameFsItem: (id: string, newName: string, type?: FileType) => void;
   editFileContent: (id: string, newContent: string) => void;
   deleteFsItem: (id: string) => void;
   expandFolders: (ids: string[]) => void;
