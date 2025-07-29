@@ -53,6 +53,7 @@ const OperateArea = ({
           buttonProps={{
             onClick: () => {
               const newId = createFsItem('test.ts', FileType.typescript);
+              // TODO: 新建文件后创建webcontainer文件
               requestAnimationFrame(() => {
                 apiRef.current?.setEditedItem(newId);
               });

@@ -14,4 +14,12 @@ export default defineConfig({
   output: {
     svgDefaultExport: 'component',
   },
+  tools: {
+    devServer: {
+      headers: {
+        'Cross-Origin-Embedder-Policy': 'require-corp',
+        'Cross-Origin-Opener-Policy': 'same-origin',
+      },
+    },
+  },
 });

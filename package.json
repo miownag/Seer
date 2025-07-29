@@ -33,6 +33,8 @@
     "@mui/material": "7.0.2",
     "@mui/x-tree-view": "^8.5.0",
     "@react-spring/web": "^9.7.5",
+    "@webcontainer/api": "^1.6.1",
+    "ahooks": "^3.9.0",
     "es-toolkit": "^1.36.0",
     "immer": "^10.1.1",
     "monaco-editor": "^0.52.2",

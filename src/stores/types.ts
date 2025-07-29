@@ -1,5 +1,6 @@
 import type { FileType, GitFileStatus } from '@/constants/enums';
 import type { TreeViewBaseItem } from '@mui/x-tree-view';
+import type { WebContainer } from '@webcontainer/api';
 
 interface IFile {
   id: string;
@@ -15,6 +16,8 @@ type State = {
   selectedFsItem: string | undefined;
   expandedFolders: string[];
   aiVisible: boolean;
+  webcontainer: WebContainer | null;
+  webcontainerReady: boolean;
 };
 
 type Actions = {
@@ -26,6 +29,8 @@ type Actions = {
   foldFolders: (ids: string[] | 'all', foldChildren?: boolean) => void;
   selectFsItem: (id: string) => void;
   setAiVisible: (visible: boolean) => void;
+  setWebcontainer: (webcontainer: WebContainer) => void;
+  initWebcontainer: () => Promise<void>;
 };
 
 export type { IFile, State, Actions };

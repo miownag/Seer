@@ -1,5 +1,6 @@
 import { GitFileStatus } from '@/constants/enums';
 import { findTreeNode } from '@/utils';
+import { WebContainer } from '@webcontainer/api';
 import { enableMapSet } from 'immer';
 import { createContext, useContext } from 'react';
 import { useStore } from 'zustand';
@@ -11,11 +12,31 @@ import type { Actions, IFile, State } from './types';
 enableMapSet();
 
 const mainStore = createStore<State & Actions>()(
-  immer((set) => ({
+  immer((set, get) => ({
     fileTree: [],
     selectedFsItem: undefined,
     expandedFolders: [],
     aiVisible: false,
+    webcontainer: null,
+    webcontainerReady: false,
+
+    setWebcontainer: (webcontainer) => {
+      set((state) => {
+        state.webcontainer = webcontainer;
+        state.webcontainerReady = true;
+      });
+    },
+
+    initWebcontainer: async () => {
+      try {
+        const webcontainer = await WebContainer.boot();
+        get().setWebcontainer(webcontainer);
+        console.log('WebContainer initialized successfully');
+      } catch (error) {
+        console.error('Failed to initialize WebContainer:', error);
+      }
+    },
+
     createFsItem: (label, fileType) => {
       const newId = `${Date.now()}-${Math.random()}-${label}`;
       set((state) => {
@@ -52,6 +73,7 @@ const mainStore = createStore<State & Actions>()(
       });
       return newId;
     },
+
     renameFsItem: (fsItem, newName, fileType) => {
       set((state) => {
         const { fileTree } = state;
@@ -81,6 +103,9 @@ const mainStore = createStore<State & Actions>()(
     },
   })),
 );
+
+// 在store创建后立即初始化webcontainer
+mainStore.getState().initWebcontainer();
 
 const MainStoreContext = createContext<typeof mainStore | null>(null);
 
