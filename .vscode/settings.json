@@ -87,5 +87,6 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   "cSpell.words": [
     "rspack"
-  ]
+  ],
+  "kiroAgent.configureMCP": "Disabled"
 }

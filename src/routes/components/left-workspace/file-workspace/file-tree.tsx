@@ -1,5 +1,4 @@
 import { FILE_TYPE_ICON_MAP } from '@/constants';
-import { useUpdate } from '@/hooks';
 import { useMainStore } from '@/stores';
 import type { IFile } from '@/stores/types';
 import { getFileTypeByName } from '@/utils';
@@ -8,7 +7,12 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
 import EditIcon from '@mui/icons-material/Edit';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
-import { ListItemIcon, ListItemText, MenuList } from '@mui/material';
+import {
+  CircularProgress,
+  ListItemIcon,
+  ListItemText,
+  MenuList,
+} from '@mui/material';
 import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
 import Menu from '@mui/material/Menu';
@@ -193,193 +197,233 @@ const CustomLabel = ({
   </TreeItemLabel>
 );
 
-const CustomTreeItem = React.forwardRef(
-  (props: CustomTreeItemProps, ref: React.Ref<HTMLLIElement>) => {
-    const { id, itemId, label, disabled, children, ...other } = props;
-    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    const [menuPosition, setMenuPosition] = useState<
-      | {
-          top: number;
-          left: number;
-        }
-      | undefined
-    >();
-
-    const handleContextMenu = (event: React.MouseEvent) => {
-      event.preventDefault();
-      setAnchorEl(event.currentTarget as HTMLElement);
-      setMenuPosition({
-        top: event.clientY,
-        left: event.clientX,
-      });
-    };
-
-    const handleMenuClose = () => {
-      setAnchorEl(null);
-      setMenuPosition(void 0);
-    };
-
-    const {
-      getContextProviderProps,
-      getRootProps,
-      getContentProps,
-      getIconContainerProps,
-      getCheckboxProps,
-      getLabelProps,
-      getGroupTransitionProps,
-      getDragAndDropOverlayProps,
-      getLabelInputProps,
-    } = useTreeItem({ id, itemId, children, label, disabled, rootRef: ref });
-
-    const { interactions, status } = useTreeItemUtils({
-      itemId: props.itemId,
-      children: props.children,
-    });
-
-    const item = useTreeItemModel<IFile>(itemId);
-
-    let icon: typeof FolderOpenIcon;
-    if (status.expanded) {
-      icon = FolderOpenIcon;
-    } else if (item?.fileType) {
-      icon = FILE_TYPE_ICON_MAP[item.fileType] ?? '';
-    } else {
-      icon = DescriptionRoundedIcon;
-    }
-
-    return (
-      <TreeItemProvider {...getContextProviderProps()}>
-        <TreeItemRoot {...getRootProps(other)}>
-          <TreeItemContent
-            {...getContentProps()}
-            onContextMenu={handleContextMenu}
-          >
-            <TreeItemIconContainer {...getIconContainerProps()}>
-              <TreeItemIcon status={status} />
-            </TreeItemIconContainer>
-            <TreeItemCheckbox {...getCheckboxProps()} />
-            {status.editing ? (
-              <input
-                {...getLabelInputProps()}
-                className="border-none bg-transparent outline-none w-full text-sm"
-              />
-            ) : (
-              <CustomLabel
-                {...getLabelProps({
-                  icon,
-                  expandable: status.expandable && status.expanded,
-                })}
-              />
-            )}
-            <TreeItemDragAndDropOverlay {...getDragAndDropOverlayProps()} />
-          </TreeItemContent>
-          {children && <TransitionComponent {...getGroupTransitionProps()} />}
-          <Menu
-            anchorReference="anchorPosition"
-            anchorPosition={menuPosition}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'left',
-            }}
-            open={Boolean(anchorEl && menuPosition)}
-            onClose={handleMenuClose}
-            disableScrollLock={true}
-          >
-            <MenuList className="w-[180px]" style={{ padding: 0 }}>
-              <MenuItem
-                onClick={() => {
-                  interactions.toggleItemEditing();
-                }}
-              >
-                <ListItemIcon>
-                  <EditIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText>重命名</ListItemText>
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  ⌘N
-                </Typography>
-              </MenuItem>
-              <MenuItem>
-                <ListItemIcon>
-                  <DeleteIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText>删除</ListItemText>
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  ⌘D
-                </Typography>
-              </MenuItem>
-              <MenuItem>
-                <ListItemIcon>
-                  <ContentCut fontSize="small" />
-                </ListItemIcon>
-                <ListItemText>剪切</ListItemText>
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  ⌘X
-                </Typography>
-              </MenuItem>
-              <MenuItem>
-                <ListItemIcon>
-                  <ContentCopy fontSize="small" />
-                </ListItemIcon>
-                <ListItemText>复制</ListItemText>
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  ⌘C
-                </Typography>
-              </MenuItem>
-              <MenuItem>
-                <ListItemIcon>
-                  <ContentPaste fontSize="small" />
-                </ListItemIcon>
-                <ListItemText>粘贴</ListItemText>
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  ⌘V
-                </Typography>
-              </MenuItem>
-            </MenuList>
-          </Menu>
-        </TreeItemRoot>
-      </TreeItemProvider>
-    );
-  },
-);
-
 const FileTree = ({
   apiRef,
 }: {
   apiRef: apiRefType;
 }) => {
-  const { fileTree, selectFsItem, selectedFsItem, renameFsItem } = useMainStore(
-    (state) =>
-      pick(state, [
-        'fileTree',
-        'selectFsItem',
-        'selectedFsItem',
-        'renameFsItem',
-      ]),
+  const {
+    fileTree,
+    selectFsItem,
+    selectedFsItem,
+    renameFsItem,
+    deleteFsItem,
+    webcontainerLoading,
+  } = useMainStore((state) =>
+    pick(state, [
+      'fileTree',
+      'selectFsItem',
+      'selectedFsItem',
+      'renameFsItem',
+      'deleteFsItem',
+      'webcontainerLoading',
+    ]),
+  );
+
+  const CustomTreeItem = React.forwardRef(
+    (props: CustomTreeItemProps, ref: React.Ref<HTMLLIElement>) => {
+      const { id, itemId, label, disabled, children, ...other } = props;
+      const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+      const [menuPosition, setMenuPosition] = useState<
+        | {
+            top: number;
+            left: number;
+          }
+        | undefined
+      >();
+
+      const handleContextMenu = (event: React.MouseEvent) => {
+        event.preventDefault();
+        setAnchorEl(event.currentTarget as HTMLElement);
+        setMenuPosition({
+          top: event.clientY,
+          left: event.clientX,
+        });
+      };
+
+      const handleMenuClose = () => {
+        setAnchorEl(null);
+        setMenuPosition(void 0);
+      };
+
+      const {
+        getContextProviderProps,
+        getRootProps,
+        getContentProps,
+        getIconContainerProps,
+        getCheckboxProps,
+        getLabelProps,
+        getGroupTransitionProps,
+        getDragAndDropOverlayProps,
+        getLabelInputProps,
+      } = useTreeItem({ id, itemId, children, label, disabled, rootRef: ref });
+
+      const { interactions, status } = useTreeItemUtils({
+        itemId: props.itemId,
+        children: props.children,
+      });
+
+      const item = useTreeItemModel<IFile>(itemId);
+
+      let icon: typeof FolderOpenIcon;
+      if (status.expanded) {
+        icon = FolderOpenIcon;
+      } else if (item?.fileType) {
+        icon = FILE_TYPE_ICON_MAP[item.fileType] ?? '';
+      } else {
+        icon = DescriptionRoundedIcon;
+      }
+
+      return (
+        <TreeItemProvider {...getContextProviderProps()}>
+          <TreeItemRoot {...getRootProps(other)}>
+            <TreeItemContent
+              {...getContentProps()}
+              onContextMenu={handleContextMenu}
+            >
+              <TreeItemIconContainer {...getIconContainerProps()}>
+                <TreeItemIcon status={status} />
+              </TreeItemIconContainer>
+              <TreeItemCheckbox {...getCheckboxProps()} />
+              {status.editing ? (
+                <input
+                  {...getLabelInputProps()}
+                  className="border-none bg-transparent outline-none w-full text-sm"
+                />
+              ) : (
+                <CustomLabel
+                  {...getLabelProps({
+                    icon,
+                    expandable: status.expandable && status.expanded,
+                  })}
+                />
+              )}
+              <TreeItemDragAndDropOverlay {...getDragAndDropOverlayProps()} />
+            </TreeItemContent>
+            {children && <TransitionComponent {...getGroupTransitionProps()} />}
+            <Menu
+              anchorReference="anchorPosition"
+              anchorPosition={menuPosition}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'left',
+              }}
+              open={Boolean(anchorEl && menuPosition)}
+              onClose={handleMenuClose}
+              disableScrollLock={true}
+            >
+              <MenuList className="w-[180px]" style={{ padding: 0 }}>
+                <MenuItem
+                  onClick={() => {
+                    handleMenuClose();
+                    requestAnimationFrame(() => {
+                      interactions.toggleItemEditing();
+                    });
+                  }}
+                >
+                  <ListItemIcon>
+                    <EditIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>重命名</ListItemText>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    ⌘N
+                  </Typography>
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleMenuClose();
+                    deleteFsItem(itemId);
+                  }}
+                >
+                  <ListItemIcon>
+                    <DeleteIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>删除</ListItemText>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    ⌘D
+                  </Typography>
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleMenuClose();
+                    // TODO: 剪切功能
+                  }}
+                >
+                  <ListItemIcon>
+                    <ContentCut fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>剪切</ListItemText>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    ⌘X
+                  </Typography>
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleMenuClose();
+                    // TODO: 复制功能
+                  }}
+                >
+                  <ListItemIcon>
+                    <ContentCopy fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>复制</ListItemText>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    ⌘C
+                  </Typography>
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleMenuClose();
+                    // TODO: 粘贴功能
+                  }}
+                >
+                  <ListItemIcon>
+                    <ContentPaste fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>粘贴</ListItemText>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    ⌘V
+                  </Typography>
+                </MenuItem>
+              </MenuList>
+            </Menu>
+          </TreeItemRoot>
+        </TreeItemProvider>
+      );
+    },
   );
 
   return (
-    <RichTreeView
-      items={fileTree}
-      sx={{
-        height: 'fit-content',
-        flexGrow: 1,
-        maxWidth: 400,
-      }}
-      slots={{
-        item: CustomTreeItem,
-      }}
-      apiRef={apiRef}
-      isItemEditable
-      onItemLabelChange={(id, newName) => {
-        renameFsItem(id, newName, getFileTypeByName(newName));
-      }}
-      itemChildrenIndentation={24}
-      selectedItems={selectedFsItem}
-      onSelectedItemsChange={(_, id) => {
-        id && selectFsItem(id);
-      }}
-    />
+    <>
+      {webcontainerLoading ? (
+        <div className="w-full h-full flex justify-center items-center flex-col">
+          <CircularProgress size={20} color="warning" className="mb-2" />
+          <div>文件系统加载中...</div>
+        </div>
+      ) : (
+        <RichTreeView
+          items={fileTree}
+          sx={{
+            height: 'fit-content',
+            flexGrow: 1,
+            maxWidth: 400,
+          }}
+          slots={{
+            item: CustomTreeItem,
+          }}
+          apiRef={apiRef}
+          isItemEditable={true}
+          onItemLabelChange={(id, newName) => {
+            renameFsItem(id, newName, getFileTypeByName(newName));
+          }}
+          itemChildrenIndentation={24}
+          selectedItems={selectedFsItem}
+          onSelectedItemsChange={(_, id) => {
+            id && selectFsItem(id);
+          }}
+        />
+      )}
+    </>
   );
 };
 

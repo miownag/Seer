@@ -35,15 +35,21 @@ const OperateArea = ({
     | undefined
   >;
 }) => {
-  const { selectedFsItem, createFsItem, deleteFsItem, foldFolders } =
-    useMainStore((state) =>
-      pick(state, [
-        'selectedFsItem',
-        'createFsItem',
-        'deleteFsItem',
-        'foldFolders',
-      ]),
-    );
+  const {
+    selectedFsItem,
+    createFsItem,
+    deleteFsItem,
+    foldFolders,
+    webcontainerLoading,
+  } = useMainStore((state) =>
+    pick(state, [
+      'selectedFsItem',
+      'createFsItem',
+      'deleteFsItem',
+      'foldFolders',
+      'webcontainerLoading',
+    ]),
+  );
   return (
     <Box className="h-6 w-full flex items-center justify-between pl-2 mb-4">
       <Box className="text-gray-700 font-bold">文件</Box>
@@ -51,13 +57,17 @@ const OperateArea = ({
         <TooltipIconButton
           content="新建文件"
           buttonProps={{
-            onClick: () => {
-              const newId = createFsItem('test.ts', FileType.typescript);
-              // TODO: 新建文件后创建webcontainer文件
+            onClick: async () => {
+              const randomName = Math.random().toString(36).slice(-8);
+              const newId = await createFsItem(
+                `${randomName}.ts`,
+                FileType.typescript,
+              );
               requestAnimationFrame(() => {
-                apiRef.current?.setEditedItem(newId);
+                apiRef.current?.setEditedItem(newId || '');
               });
             },
+            disabled: webcontainerLoading,
           }}
         >
           <NoteAddRoundedIcon fontSize="small" />
@@ -65,7 +75,17 @@ const OperateArea = ({
         <TooltipIconButton
           content="新建文件夹"
           buttonProps={{
-            onClick: () => createFsItem('test', FileType.folder),
+            onClick: async () => {
+              const randomName = Math.random().toString(36).slice(-8);
+              const newId = await createFsItem(
+                `${randomName}`,
+                FileType.folder,
+              );
+              requestAnimationFrame(() => {
+                apiRef.current?.setEditedItem(newId || '');
+              });
+            },
+            disabled: webcontainerLoading,
           }}
         >
           <CreateNewFolderRoundedIcon fontSize="small" />
@@ -78,6 +98,7 @@ const OperateArea = ({
                 deleteFsItem(selectedFsItem);
               }
             },
+            disabled: webcontainerLoading,
           }}
         >
           <DeleteOutlineRoundedIcon fontSize="small" />
@@ -88,6 +109,7 @@ const OperateArea = ({
             onClick: () => {
               foldFolders('all');
             },
+            disabled: webcontainerLoading,
           }}
         >
           <UnfoldLessRoundedIcon fontSize="small" />
