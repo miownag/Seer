@@ -326,7 +326,7 @@ const FileTree = ({
                   </ListItemIcon>
                   <ListItemText>重命名</ListItemText>
                   <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    ⌘N
+                    ⌘ + N
                   </Typography>
                 </MenuItem>
                 <MenuItem
@@ -340,7 +340,7 @@ const FileTree = ({
                   </ListItemIcon>
                   <ListItemText>删除</ListItemText>
                   <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    ⌘D
+                    ⌘ + D
                   </Typography>
                 </MenuItem>
                 <MenuItem
@@ -354,7 +354,7 @@ const FileTree = ({
                   </ListItemIcon>
                   <ListItemText>剪切</ListItemText>
                   <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    ⌘X
+                    ⌘ + X
                   </Typography>
                 </MenuItem>
                 <MenuItem
@@ -368,7 +368,7 @@ const FileTree = ({
                   </ListItemIcon>
                   <ListItemText>复制</ListItemText>
                   <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    ⌘C
+                    ⌘ + C
                   </Typography>
                 </MenuItem>
                 <MenuItem
@@ -382,7 +382,7 @@ const FileTree = ({
                   </ListItemIcon>
                   <ListItemText>粘贴</ListItemText>
                   <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    ⌘V
+                    ⌘ + V
                   </Typography>
                 </MenuItem>
               </MenuList>
@@ -402,6 +402,7 @@ const FileTree = ({
         </div>
       ) : (
         <RichTreeView
+          // TODO: 新建时会收起
           items={fileTree}
           sx={{
             height: 'fit-content',

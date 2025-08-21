@@ -14,7 +14,15 @@ const fileTreeData: IFile[] = [
     id: 'root-folder',
     label: 'root-folder',
     fileType: FileType.folder,
-    children: [],
+    children: [
+      {
+        id: 'root-folder/a.ts',
+        label: 'a.ts',
+        fileType: FileType.typescript,
+        gitStatus: GitFileStatus.none,
+        path: '/root-folder/a.ts',
+      },
+    ],
     path: '/root-folder',
     gitStatus: GitFileStatus.none,
   },
@@ -52,6 +60,7 @@ const mainStore = createStore<State & Actions>()(
     fileTree: [],
     selectedFsItem: undefined,
     expandedFolders: [],
+    fileContentMap: new Map(),
     aiVisible: false,
     webcontainer: null,
     webcontainerReady: false,
@@ -92,7 +101,7 @@ const mainStore = createStore<State & Actions>()(
      * 加载文件树：1.加载至Web Container 2.加载至本地状态
      */
     loadFileTree: async () => {
-      const { webcontainer } = get();
+      const { webcontainer, syncFileTreeFromFs } = get();
       // biome-ignore lint/complexity/noForEach: <explanation>
       fileTreeData.forEach(async (item) => {
         if (item.fileType === 'folder') {
@@ -101,7 +110,7 @@ const mainStore = createStore<State & Actions>()(
           await webcontainer?.fs.writeFile(item.id, '');
         }
       });
-      await get().syncFileTreeFromFs();
+      await syncFileTreeFromFs();
       set({
         fileTree: fileTreeData,
         webcontainerLoading: false,
@@ -143,15 +152,31 @@ const mainStore = createStore<State & Actions>()(
     renameFsItem: async (id, newName, fileType) => {
       if (!id) return;
       const { webcontainer, syncFileTreeFromFs } = get();
+      const newPath = `${id.split('/').slice(0, -1).join('/')}/${newName}`;
+      if (id === newPath) return;
       console.log('重命名', id, newName);
-      await webcontainer?.fs.rename(
-        id,
-        `${id.split('/').slice(0, -1).join('/')}/${newName}`,
-      );
+      // TODO: 重命名时会新建
+      await webcontainer?.fs.rename(id, newPath);
+      set((state) => {
+        const { fileContentMap } = state;
+        if (fileContentMap.has(id)) {
+          state.fileContentMap.set(newPath, fileContentMap.get(id) as string);
+          fileContentMap.delete(id);
+        }
+        return state;
+      });
       syncFileTreeFromFs();
     },
 
-    editFileContent: (_file, newContent) => {},
+    editFileContent: async (id, newContent) => {
+      if (!id) return;
+      const { webcontainer } = get();
+      await webcontainer?.fs.writeFile(id, newContent);
+      set((state) => {
+        state.fileContentMap.set(id, newContent);
+        return state;
+      });
+    },
 
     deleteFsItem: async (id) => {
       if (!id) return;
@@ -169,10 +194,30 @@ const mainStore = createStore<State & Actions>()(
     expandFolders: (folders) => {},
     foldFolders: (folders, foldChildren = false) => {},
 
-    selectFsItem: (id) => {
+    selectFsItem: async (id) => {
+      const { fileContentMap, webcontainer } = get();
+      if (!fileContentMap.has(id)) {
+        try {
+          const content = (await webcontainer?.fs.readFile(id))?.toString();
+          set((state) => {
+            state.fileContentMap.set(id, content || '');
+            return state;
+          });
+        } catch (e) {
+          console.error('读取文件内容失败:', e);
+        }
+      }
       set({
         selectedFsItem: id,
+        fileContentMap,
       });
+    },
+
+    getFileType: (id) => {
+      if (!id) return;
+      const { fileTree } = get();
+      const [node] = findTreeNode(fileTree, id);
+      return node?.fileType;
     },
 
     toggleAiVisible: () => {

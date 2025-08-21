@@ -10,11 +10,11 @@ interface IFile {
   parentFolder?: IFile;
   fileType?: FileType;
   children?: IFile[];
-  content?: string;
 }
 
 type State = {
   fileTree: TreeViewBaseItem<IFile>[];
+  fileContentMap: Map<string, string>;
   selectedFsItem: string | undefined;
   expandedFolders: string[];
   aiVisible: boolean;
@@ -28,14 +28,15 @@ type Actions = {
   syncFileTreeFromFs: () => Promise<void>;
   createFsItem: (name: string, type?: FileType) => Promise<string | false>;
   renameFsItem: (id: string, newName: string, type?: FileType) => void;
-  editFileContent: (id: string, newContent: string) => void;
+  editFileContent: (id: string, newContent: string) => Promise<void>;
   deleteFsItem: (id: string) => void;
   expandFolders: (ids: string[]) => void;
   foldFolders: (ids: string[] | 'all', foldChildren?: boolean) => void;
-  selectFsItem: (id: string) => void;
+  selectFsItem: (id: string) => Promise<void>;
   toggleAiVisible: () => void;
   setWebcontainer: (webcontainer: WebContainer) => void;
   initWebcontainer: () => Promise<void>;
+  getFileType: (id: string | undefined) => string | undefined;
 };
 
 export type { IFile, State, Actions };

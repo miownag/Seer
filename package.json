@@ -29,6 +29,7 @@
     "@emotion/styled": "^11.14.0",
     "@modern-js/plugin-tailwindcss": "2.67.3",
     "@modern-js/runtime": "2.67.3",
+    "@monaco-editor/react": "^4.7.0",
     "@mui/icons-material": "7.0.2",
     "@mui/material": "7.0.2",
     "@mui/x-tree-view": "^8.5.0",
