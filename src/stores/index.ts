@@ -11,19 +11,17 @@ import type { Actions, IFile, State } from './types';
 
 const fileTreeData: IFile[] = [
   {
-    id: 'root-folder',
+    id: '//root-folder',
     label: 'root-folder',
     fileType: FileType.folder,
     children: [
       {
-        id: 'root-folder/a.ts',
+        id: '//root-folder/a.ts',
         label: 'a.ts',
         fileType: FileType.typescript,
         gitStatus: GitFileStatus.none,
-        path: '/root-folder/a.ts',
       },
     ],
-    path: '/root-folder',
     gitStatus: GitFileStatus.none,
   },
 ];
@@ -33,6 +31,7 @@ const buildFileTree = async (
   path: string,
 ): Promise<IFile[]> => {
   const entries = await webcontainer.fs.readdir(path, { withFileTypes: true });
+  console.log('根目录2', path, await webcontainer?.fs.readdir('//root-folder'));
   const children = await Promise.all(
     entries.map(async (entry) => {
       const fullPath = `${path}/${entry.name}`;
@@ -42,7 +41,6 @@ const buildFileTree = async (
         fileType: entry.isDirectory()
           ? FileType.folder
           : getFileTypeByName(entry.name),
-        path: fullPath,
         children: entry.isDirectory()
           ? await buildFileTree(webcontainer, fullPath)
           : [],
@@ -112,12 +110,12 @@ const mainStore = createStore<State & Actions>()(
       });
       await syncFileTreeFromFs();
       set({
-        fileTree: fileTreeData,
         webcontainerLoading: false,
       });
     },
 
     createFsItem: async (label, fileType) => {
+      console.log('dispatch create');
       const { fileTree, selectedFsItem, webcontainer, syncFileTreeFromFs } =
         get();
       const [selectedFsItemNode, parentNode] = findTreeNode(
@@ -130,10 +128,11 @@ const mainStore = createStore<State & Actions>()(
       } else {
         basePath =
           selectedFsItemNode.fileType === 'folder'
-            ? selectedFsItemNode.path
-            : parentNode?.path || '/';
+            ? selectedFsItemNode.id
+            : parentNode?.id || '/';
       }
       const fullPath = `${basePath}/${label}`;
+      console.log('创建文件', fullPath);
       try {
         if (fileType === FileType.folder) {
           await webcontainer?.fs.mkdir(fullPath); // 调用 WebContainer API 创建目录
@@ -150,22 +149,22 @@ const mainStore = createStore<State & Actions>()(
     },
 
     renameFsItem: async (id, newName, fileType) => {
+      console.log('dispatch rename');
       if (!id) return;
-      const { webcontainer, syncFileTreeFromFs } = get();
+      const { webcontainer, syncFileTreeFromFs, fileContentMap } = get();
       const newPath = `${id.split('/').slice(0, -1).join('/')}/${newName}`;
       if (id === newPath) return;
-      console.log('重命名', id, newName);
-      // TODO: 重命名时会新建
+      console.log('重命名', id, newPath);
       await webcontainer?.fs.rename(id, newPath);
-      set((state) => {
-        const { fileContentMap } = state;
-        if (fileContentMap.has(id)) {
+      console.log('根目录', await webcontainer?.fs.readdir('//root-folder'));
+      await syncFileTreeFromFs();
+      if (fileContentMap.has(id)) {
+        set((state) => {
           state.fileContentMap.set(newPath, fileContentMap.get(id) as string);
           fileContentMap.delete(id);
-        }
-        return state;
-      });
-      syncFileTreeFromFs();
+          return state;
+        });
+      }
     },
 
     editFileContent: async (id, newContent) => {

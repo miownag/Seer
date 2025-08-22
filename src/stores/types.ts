@@ -6,7 +6,6 @@ interface IFile {
   id: string;
   label: string;
   gitStatus: GitFileStatus;
-  path: string;
   parentFolder?: IFile;
   fileType?: FileType;
   children?: IFile[];
