@@ -5,6 +5,7 @@ import {
   type FC,
   type ReactElement,
   useCallback,
+  useEffect,
   useRef,
   useState,
 } from 'react';
@@ -22,6 +23,7 @@ interface IProps {
   minHeight?: number;
   maxWidth?: number;
   minWidth?: number;
+  onSizeChange?: (width: number, height: number) => void;
 }
 
 const ResizableBox: FC<IProps> = ({
@@ -37,6 +39,7 @@ const ResizableBox: FC<IProps> = ({
   minHeight,
   maxWidth,
   minWidth,
+  onSizeChange,
 }) => {
   const posSet = new Set(positions);
   const [width, setWidth] = useState<number>(defaultWidth);
@@ -50,6 +53,10 @@ const ResizableBox: FC<IProps> = ({
   const resizeLeft = posSet.has('left') && !fixedWidth;
   const resizeTop = posSet.has('top') && !fixedHeight;
   const resizeBottom = posSet.has('bottom') && !fixedHeight;
+
+  useEffect(() => {
+    onSizeChange?.(width, height);
+  }, [width, height, onSizeChange]);
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -71,12 +78,14 @@ const ResizableBox: FC<IProps> = ({
       (isNil(maxWidth) || newWidth <= maxWidth) &&
       (isNil(minWidth) || newWidth >= minWidth)
     ) {
+      // onSizeChange?.(newWidth, height);
       setWidth(newWidth);
     }
     if (
       (isNil(maxHeight) || newHeight <= maxHeight) &&
       (isNil(minHeight) || newHeight >= minHeight)
     ) {
+      // onSizeChange?.(width, newHeight);
       setHeight(newHeight);
     }
   }, []);

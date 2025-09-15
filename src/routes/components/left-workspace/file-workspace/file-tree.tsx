@@ -396,7 +396,7 @@ const FileTree = ({
   return (
     <>
       {webcontainerLoading ? (
-        <div className="w-full h-full flex justify-center items-center flex-col">
+        <div className="w-full h-full flex justify-center items-center flex-col flex-1">
           <CircularProgress size={20} color="warning" className="mb-2" />
           <div>文件系统加载中...</div>
         </div>
@@ -406,8 +406,9 @@ const FileTree = ({
           items={fileTree}
           sx={{
             height: 'fit-content',
-            flexGrow: 1,
             maxWidth: 400,
+            flex: 1,
+            overflow: 'auto',
           }}
           slots={{
             item: CustomTreeItem,

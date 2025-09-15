@@ -2,11 +2,13 @@ import ResizableBox from '@/components/resizable-box';
 import ReportProblemRoundedIcon from '@mui/icons-material/ReportProblemRounded';
 import TerminalRoundedIcon from '@mui/icons-material/TerminalRounded';
 import { Box, Tab, Tabs } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useRef, useState } from 'react';
+import TerminalComp from './components/terminal';
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
   value: number;
+  style?: React.CSSProperties;
 }
 
 const a11yProps = (index: number) => ({
@@ -21,24 +23,26 @@ const CustomTabPanel = (props: TabPanelProps) => {
     <div
       role="tabpanel"
       hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
+      id={`tabpanel-${index}`}
+      aria-labelledby={`tab-${index}`}
       {...other}
     >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+      {value === index && <div className="w-full h-full p-2">{children}</div>}
     </div>
   );
 };
 
 const BottomWorkspace = () => {
   const [tab, setTab] = useState(1);
-
-  useEffect(() => {
-    console.log('tab', tab);
-  }, [tab]);
+  const terminalRef = useRef<{ resize: () => void }>(null);
+  const [terminalTabHeight, setTerminalTabHeight] = useState(0);
 
   return (
     <ResizableBox
+      onSizeChange={(_width, height) => {
+        setTerminalTabHeight(height - 60);
+        terminalRef.current?.resize();
+      }}
       contentClassName="bg-white rounded-lg p-2"
       positions={['top']}
       fixedWidth="w-full"
@@ -46,11 +50,8 @@ const BottomWorkspace = () => {
       maxHeight={350}
       minHeight={200}
     >
-      <Box className="w-full">
-        <Box
-          sx={{ borderBottom: 1, borderColor: 'divider' }}
-          // className="text-orange-400"
-        >
+      <Box className="w-full h-full">
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs
             value={tab}
             onChange={(_, tab) => setTab(tab)}
@@ -84,8 +85,12 @@ const BottomWorkspace = () => {
         <CustomTabPanel value={tab} index={0}>
           问题
         </CustomTabPanel>
-        <CustomTabPanel value={tab} index={1}>
-          终端
+        <CustomTabPanel
+          value={tab}
+          index={1}
+          style={{ height: terminalTabHeight }}
+        >
+          <TerminalComp ref={terminalRef} />
         </CustomTabPanel>
       </Box>
     </ResizableBox>
